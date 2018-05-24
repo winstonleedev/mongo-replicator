@@ -1,11 +1,11 @@
 #!/bin/bash
-echo "Waiting for startup.."
-until curl http://mongo1:28017/serverStatus\?text\=1 2>&1 | grep uptime | head -1; do
+echo "Waiting for startup"
+until ps -ax | grep mongo; do
   printf '.'
   sleep 1
 done
 
-echo curl http://mongo1:28017/serverStatus\?text\=1 2>&1 | grep uptime | head -1
+echo ps -ax | grep mongo
 echo "Started.."
 
 sleep 10

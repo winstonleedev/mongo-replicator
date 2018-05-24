@@ -5,17 +5,23 @@ services:
   mongo3:
     image: mongo:3.6
     restart: always
-    entrypoint: [ "/usr/bin/mongod", "--replSet", "rs", "--rest", "--httpinterface" ]
+    ports:
+      - '27019:27017'
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rs", "--bind_ip", "0.0.0.0"]
 
   mongo2:
     image: mongo:3.6
     restart: always
-    entrypoint: [ "/usr/bin/mongod", "--replSet", "rs", "--rest", "--httpinterface" ]
+    ports:
+      - '27018:27017'
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rs", "--bind_ip", "0.0.0.0"]
 
   mongo1:
     image: mongo:3.6
     restart: always
-    entrypoint: [ "/usr/bin/mongod", "--replSet", "rs", "--rest", "--httpinterface" ]
+    ports:
+      - '27017:27017'
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rs", "--bind_ip", "0.0.0.0"]
 
   mongosetup:
     image: mongo:3.6
@@ -23,3 +29,7 @@ services:
       - ./scripts:/scripts
     restart: always
     entrypoint: [ "bash", "/scripts/mongosetup.sh" ]
+
+networks:
+  default:
+    name: mongo-network
