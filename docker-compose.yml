@@ -27,7 +27,6 @@ services:
     image: mongo:3.6
     volumes:
       - ./scripts:/scripts
-    restart: always
     entrypoint: [ "bash", "/scripts/mongosetup.sh" ]
 
 networks:

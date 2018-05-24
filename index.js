@@ -18,13 +18,17 @@ function logError(err) {
   console.error(err);
 }
 
+const DB_NAME = "superheroesdb";
+const COLLECTION_NAME = "superheroes";
+
 MongoClient
-  .connect("mongodb://localhost:27017", { useNewUrlParser: true })
+  .connect("mongodb://localhost:27017,localhost:27018,localhost:27019/" + DB_NAME +
+   "?replicaSet=rs", { useNewUrlParser: true })
   .then(client => {
     console.log("Connected correctly to server");
     // specify db and collections
-    const db = client.db("superheroesdb");
-    const collection = db.collection("superheroes");
+    const db = client.db(DB_NAME);
+    const collection = db.collection(COLLECTION_NAME);
 
     const changeStream = collection.watch();
     // start listen to changes
@@ -56,6 +60,8 @@ MongoClient
       // delete existing document
       setTimeout(function () {
         collection.deleteOne({ "spiderman": "peter parker" }, logError);
+        client.close();
+        process.exit(0);
       }, 7000);
     });
   })
