@@ -1,7 +1,9 @@
 "use strict";
 
+// TODO change to mongoose 5
 const MongoClient = require("mongodb").MongoClient;
-const assert = require("assert");
+const { Client } = require("pg");
+
 /*
 Modify Change Stream Output using Aggregation Pipelines
 You can control change stream output by providing an array of one or more of the following pipeline stages when configuring the change stream:
@@ -21,6 +23,16 @@ function logError(err) {
 const DB_NAME = "superheroesdb";
 const COLLECTION_NAME = "superheroes";
 
+const postgresClient = new Client({
+  user: "postgres",
+  host: "localhost",
+  database: "test",
+  password: "",
+  port: 5432
+});
+
+postgresClient.connect();
+
 MongoClient
   .connect("mongodb://localhost:27017,localhost:27018,localhost:27019/" + DB_NAME +
    "?replicaSet=rs", { useNewUrlParser: true })
@@ -33,6 +45,10 @@ MongoClient
     const changeStream = collection.watch();
     // start listen to changes
     changeStream.on("change", function (change) {
+      postgresClient.query("SELECT $1::text as message", ["Hello world!"], (err, res) => {
+        console.log(err ? err.stack : res.rows[0].message); // Hello World!
+        postgresClient.end();
+      });
       console.log(change);
     });
 
@@ -44,25 +60,25 @@ MongoClient
       setTimeout(function () {
         collection.insert({ "superman": "clark kent" }, logError);
       }, 2000);
-      setTimeout(function () {
-        collection.insert({ "wonder-woman": "diana prince" }, logError);
-      }, 3000);
-      setTimeout(function () {
-        collection.insert({ "ironman": "tony stark" }, logError);
-      }, 4000);
-      setTimeout(function () {
-        collection.insert({ "spiderman": "peter parker" }, logError);
-      }, 5000);
-      // update existing document
-      setTimeout(function () {
-        collection.updateOne({ "ironman": "tony stark" }, { $set: { "ironman": "elon musk" } }, logError);
-      }, 6000);
-      // delete existing document
-      setTimeout(function () {
-        collection.deleteOne({ "spiderman": "peter parker" }, logError);
-        client.close();
-        process.exit(0);
-      }, 7000);
+      // setTimeout(function () {
+      //   collection.insert({ "wonder-woman": "diana prince" }, logError);
+      // }, 3000);
+      // setTimeout(function () {
+      //   collection.insert({ "ironman": "tony stark" }, logError);
+      // }, 4000);
+      // setTimeout(function () {
+      //   collection.insert({ "spiderman": "peter parker" }, logError);
+      // }, 5000);
+      // // update existing document
+      // setTimeout(function () {
+      //   collection.updateOne({ "ironman": "tony stark" }, { $set: { "ironman": "elon musk" } }, logError);
+      // }, 6000);
+      // // delete existing document
+      // setTimeout(function () {
+      //   collection.deleteOne({ "spiderman": "peter parker" }, logError);
+      //   client.close();
+      //   process.exit(0);
+      // }, 7000);
     });
   })
   .catch(err => {
