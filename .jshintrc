@@ -15,7 +15,7 @@
   "unused": true,
   "strict": true,
   "indent": 2,
-  "quotmark": "double",
+  "quotmark": "single",
   "maxlen": 200,
   "esnext": true,
   "evil": true,

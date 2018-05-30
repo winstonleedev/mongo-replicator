@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
 // TODO change to mongoose 5
-const MongoClient = require("mongodb").MongoClient;
-const { Client } = require("pg");
-
+const MongoClient = require('mongodb').MongoClient;
+const { Client } = require('pg');
+const _ = require('lodash');
 /*
 Modify Change Stream Output using Aggregation Pipelines
 You can control change stream output by providing an array of one or more of the following pipeline stages when configuring the change stream:
@@ -16,69 +16,54 @@ const pipeline = [
   }
 ];
 
-function logError(err) {
-  console.error(err);
-}
-
-const DB_NAME = "superheroesdb";
-const COLLECTION_NAME = "superheroes";
+const MONGO_DB_NAME = 'testtp';
+const SENSOR_ID = 'batteryGauge-gw_248800003093-BATTERY';
+const MONGO_COLLECTION_NAME = 'tss.' + SENSOR_ID;
+const POSTGRES_DB_NAME = 'testtp';
+const POSTGRES_TABLE_NAME = 'series';
 
 const postgresClient = new Client({
-  user: "postgres",
-  host: "localhost",
-  database: "test",
-  password: "",
+  user: 'postgres',
+  host: 'localhost',
+  database: POSTGRES_DB_NAME,
+  password: '',
   port: 5432
 });
 
 postgresClient.connect();
 
 MongoClient
-  .connect("mongodb://localhost:27017,localhost:27018,localhost:27019/" + DB_NAME +
-   "?replicaSet=rs", { useNewUrlParser: true })
+  .connect('mongodb://localhost:27017,localhost:27018,localhost:27019?replicaSet=rs', { useNewUrlParser: true })
   .then(client => {
-    console.log("Connected correctly to server");
+    console.log('Connected correctly to server');
+
     // specify db and collections
-    const db = client.db(DB_NAME);
-    const collection = db.collection(COLLECTION_NAME);
+    const db = client.db(MONGO_DB_NAME);
+    const collection = db.collection(MONGO_COLLECTION_NAME);
+    let count = 0;
+
+    // db.collectionNames((error, collections) => {
+    //   _.each(collections, (value, index) => {
+    //     console.log(index, '-', value);
+    //   });
+    // });
 
     const changeStream = collection.watch();
     // start listen to changes
-    changeStream.on("change", function (change) {
-      postgresClient.query("SELECT $1::text as message", ["Hello world!"], (err, res) => {
-        console.log(err ? err.stack : res.rows[0].message); // Hello World!
-        postgresClient.end();
-      });
+    changeStream.on('change', function (change) {
       console.log(change);
-    });
 
-    process.nextTick(function () {
-      // insert few data with timeout so that we can watch it happening
-      setTimeout(function () {
-        collection.insert({ "batman": "bruce wayne" }, logError);
-      }, 1000);
-      setTimeout(function () {
-        collection.insert({ "superman": "clark kent" }, logError);
-      }, 2000);
-      // setTimeout(function () {
-      //   collection.insert({ "wonder-woman": "diana prince" }, logError);
-      // }, 3000);
-      // setTimeout(function () {
-      //   collection.insert({ "ironman": "tony stark" }, logError);
-      // }, 4000);
-      // setTimeout(function () {
-      //   collection.insert({ "spiderman": "peter parker" }, logError);
-      // }, 5000);
-      // // update existing document
-      // setTimeout(function () {
-      //   collection.updateOne({ "ironman": "tony stark" }, { $set: { "ironman": "elon musk" } }, logError);
-      // }, 6000);
-      // // delete existing document
-      // setTimeout(function () {
-      //   collection.deleteOne({ "spiderman": "peter parker" }, logError);
-      //   client.close();
-      //   process.exit(0);
-      // }, 7000);
+      if (change.fullDocument) {
+        postgresClient.query('INSERT INTO ' + POSTGRES_TABLE_NAME + '(sensor, time, value) VALUES ($1, to_timestamp($2), $3) RETURNING id',
+        [SENSOR_ID, +change.fullDocument.ctime, change.fullDocument.value], (err, res) => {
+          console.log(err ? err.stack : res.rows[0]);
+        });
+      }
+
+      if (count > 1000) {
+        client.close();
+        postgresClient.end();
+      }
     });
   })
   .catch(err => {
