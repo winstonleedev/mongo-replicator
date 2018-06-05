@@ -33,13 +33,13 @@ const postgresClient = new Client({
 postgresClient.connect();
 
 MongoClient
-  .connect('mongodb://localhost:27017,localhost:27018,localhost:27019?replicaSet=rs', { useNewUrlParser: true })
-  .then(client => {
+.connect('mongodb://localhost:27017,localhost:27018,localhost:27019?replicaSet=rs', { useNewUrlParser: true })
+.then(client => {
     console.log('Connected correctly to server');
 
     // specify db and collections
     const db = client.db(MONGO_DB_NAME);
-    const collection = db.collection(MONGO_COLLECTION_NAME);
+    // const collection = db.collection(MONGO_COLLECTION_NAME);
     let count = 0;
 
     // db.collectionNames((error, collections) => {
@@ -48,17 +48,17 @@ MongoClient
     //   });
     // });
 
-    const changeStream = collection.watch();
+    const changeStream = db.watch();
     // start listen to changes
     changeStream.on('change', function (change) {
       console.log(change);
 
-      if (change.fullDocument) {
-        postgresClient.query('INSERT INTO ' + POSTGRES_TABLE_NAME + '(sensor, time, value) VALUES ($1, to_timestamp($2), $3) RETURNING id',
-        [SENSOR_ID, +change.fullDocument.ctime, change.fullDocument.value], (err, res) => {
-          console.log(err ? err.stack : res.rows[0]);
-        });
-      }
+      // if (change.fullDocument) {
+      //   postgresClient.query('INSERT INTO ' + POSTGRES_TABLE_NAME + '(sensor, time, value) VALUES ($1, to_timestamp($2), $3) RETURNING id',
+      //   [SENSOR_ID, +change.fullDocument.ctime, change.fullDocument.value], (err, res) => {
+      //     console.log(err ? err.stack : res.rows[0]);
+      //   });
+      // }
 
       if (count > 1000) {
         client.close();

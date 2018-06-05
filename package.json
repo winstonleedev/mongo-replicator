@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "lodash": "^4.17.10",
-    "mongodb": "^3.1.0-beta4",
+    "mongodb": "github:thanhphu/node-mongodb-native",
     "pg": "^7.4.3"
   }
 }
