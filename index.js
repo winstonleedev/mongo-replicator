@@ -16,15 +16,14 @@ const pipeline = [
 ];
 
 function replicateAction(action, doc, collectionName) {
-  console.log('[replicateAction]', action, doc, collectionName);
   let sensorId = collectionName.substring(SERIES_PREFIX.length);
   if (action === 'insert') {
     postgresClient.query('INSERT INTO ' + POSTGRES_TABLE_NAME + '(sensor, time, value) VALUES ($1, to_timestamp($2), $3) RETURNING id',
     [sensorId, +doc.ctime / 1000, doc.value], (err, res) => {
-      console.log('[insert result]', err ? err.stack : res.rows[0]);
+      console.log('[insert result]', err ? err.stack : res.rows[0].id, typeof +doc.value, +doc.value);
     });
   } else {
-    console.log('[other action]', action);
+    console.log('[other action]', action, doc, collectionName);
   }
   return;
 }
