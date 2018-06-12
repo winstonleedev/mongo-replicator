@@ -12,6 +12,8 @@
   "dependencies": {
     "lodash": "^4.17.10",
     "mongodb": "github:thanhphu/node-mongodb-native",
-    "pg": "^7.4.3"
+    "node-redis-pubsub": "^2.0.0",
+    "pg": "^7.4.3",
+    "redis": "^2.8.0"
   }
 }
