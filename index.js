@@ -7,7 +7,6 @@ const postgresClient = require('./db/postgres');
 const nrpClient = require('./db/node-redis-pubsub');
 
 const MONGO_DB_NAME = 'testtp';
-const POSTGRES_TABLE_NAME = 'series';
 const SERIES_PREFIX = 'tss.';
 
 const pipeline = [
@@ -15,6 +14,12 @@ const pipeline = [
       { 'ns.db': MONGO_DB_NAME },
   }
 ];
+
+function getTableType(sampleValue) {
+  let numericalValue = +sampleValue;
+  let tableType = isNaN(numericalValue) ? 'string' : 'number';
+  return tableType;
+}
 
 function replicateAction(action, doc, collectionName) {
   /*
@@ -27,10 +32,13 @@ function replicateAction(action, doc, collectionName) {
 
   let sensorId = collectionName.substring(SERIES_PREFIX.length);
   if (action === 'insert') {
-    postgresClient.query('INSERT INTO ' + POSTGRES_TABLE_NAME + '(sensor, time, value) VALUES ($1, to_timestamp($2), $3) RETURNING id',
-    [sensorId, +doc.ctime / 1000, doc.value], (err, res) => {
-      console.log('[insert result]', err ? err.stack : res.rows[0].id, typeof +doc.value, +doc.value);
-    });
+    let tableType = getTableType(doc.value);
+    postgresClient.query(
+      'SELECT * FROM insertNumericValue($1, $2, $3, $4)',
+      [sensorId, +doc.ctime / 1000, doc.value, tableType],
+      (err, res) => {
+        console.log('[insert result]', err ? err.stack : res.rows[0].id);
+      });
   } else {
     console.log('[other action]', action, doc, collectionName);
   }
