@@ -33,12 +33,15 @@ function replicateAction(action, doc, collectionName) {
   let sensorId = collectionName.substring(SERIES_PREFIX.length);
   if (action === 'insert') {
     let tableType = getTableType(doc.value);
-    postgresClient.query(
-      'SELECT * FROM insertNumericValue($1, $2, $3, $4)',
-      [sensorId, +doc.ctime / 1000, doc.value, tableType],
-      (err, res) => {
-        console.log('[insert result]', err ? err.stack : res.rows[0].id);
-      });
+    console.log('[insert] inserting (', sensorId, +doc.ctime / 1000, doc.value, tableType, ')');
+    if (tableType === 'number') {
+      postgresClient.query(
+        'SELECT * FROM "insertNumericValue"($1, $2::timestamp, $3, $4::character varying)',
+        [sensorId, +Math.round(doc.ctime / 1000), doc.value, tableType],
+        (err, res) => {
+          console.log('[insert result]', err ? err.message : res.rows[0].id);
+        });
+    }
   } else {
     console.log('[other action]', action, doc, collectionName);
   }
