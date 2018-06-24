@@ -4,13 +4,14 @@ const _ = require('lodash');
 
 const mongoClient = require('./db/mongo');
 const postgresClient = require('./db/postgres');
-const nrpClient = require('./db/node-redis-pubsub');
+
 
 const MONGO_DB_NAME = 'testtp';
 const SERIES_PREFIX = 'tss.';
 
 const pipeline = [
-  { $match:
+  {
+    $match:
       { 'ns.db': MONGO_DB_NAME },
   }
 ];
@@ -23,7 +24,7 @@ function getTableType(sampleValue) {
 
 function replicateAction(action, doc, collectionName) {
   /*
-  {
+  doc {
       "_id" : 1520558377232.0,
       "ctime" : 1520558377232.0,
       "value" : "0"
@@ -32,16 +33,18 @@ function replicateAction(action, doc, collectionName) {
 
   let sensorId = collectionName.substring(SERIES_PREFIX.length);
   if (action === 'insert') {
+    let time = +Math.round(doc.ctime / 1000);
+    let value = doc.value;
     let tableType = getTableType(doc.value);
-    console.log('[insert] inserting (', sensorId, +doc.ctime / 1000, doc.value, tableType, ')');
-    if (tableType === 'number') {
-      postgresClient.query(
-        'SELECT * FROM "insertNumericValue"($1, $2::timestamp, $3, $4::character varying)',
-        [sensorId, +Math.round(doc.ctime / 1000), doc.value, tableType],
-        (err, res) => {
-          console.log('[insert result]', err ? err.message : res.rows[0].id);
-        });
-    }
+    console.log('[inserting] (', sensorId, time, value, tableType, ')');
+
+    postgresClient.query(
+      'SELECT * FROM "insert_value_' + tableType + '"($1, to_timestamp($2)::timestamp, $3)',
+      [sensorId, time, value],
+      (err, res) => {
+        /*jshint camelcase: false */
+        console.log('[insert result]', err ? err.message : res.rows[0].insert_value_number);
+      });
   } else {
     console.log('[other action]', action, doc, collectionName);
   }
@@ -63,31 +66,3 @@ mongoClient(
     console.error(error);
   }
 );
-
-nrpClient.on('main:all', (data) => {
-  console.log('[redis-pubsub] data.eventId, data.id, data.operation', data.eventId, data.id, data.operation);
-  console.log('[redis-pubsub] data - ', data);
-});
-
-/*
-[redis-pubsub] data.eventId, data.id, data.operation sensor smokeAlarm-gw_248300000853-COALARM D
-[redis-pubsub] data -
-Object {eventId: "sensor", id: "smokeAlarm-gw_248300000853-COALARM", operation: "D", updatedItem: null, prevItem: Object, …}
-[redis-pubsub] data.eventId, data.id, data.operation gateway gw_248300000853 D
-[redis-pubsub] data -
-Object {eventId: "gateway", id: "gw_248300000853", operation: "D", updatedItem: null, prevItem: Object, …}
-
-[redis-pubsub] data.eventId, data.id, data.operation gateway gw_248300000853 U
-[redis-pubsub] data -
-Object {eventId: "gateway", id: "gw_248300000853", operation: "U", updatedItem: Object, prevItem: Object, …}
-[redis-pubsub] data.eventId, data.id, data.operation sensor smokeAlarm-gw_248300000853-COALARM C
-[redis-pubsub] data -
-Object {eventId: "sensor", id: "smokeAlarm-gw_248300000853-COALARM", operation: "C", updatedItem: Object, prevItem: null, …}
-[redis-pubsub] data.eventId, data.id, data.operation sensor smokeAlarm-gw_248300000853-COALARM U
-[redis-pubsub] data -
-Object {eventId: "sensor", id: "smokeAlarm-gw_248300000853-COALARM", operation: "U", updatedItem: Object, prevItem: Object, …}
-[redis-pubsub] data.eventId, data.id, data.operation gateway gw_248300000853 U
-[redis-pubsub] data -
-Object {eventId: "gateway", id: "gw_248300000853", operation: "U", updatedItem: Object, prevItem: Object, …}
-*/
-
