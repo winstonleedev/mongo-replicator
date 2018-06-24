@@ -1,21 +1,30 @@
-
-CREATE OR REPLACE FUNCTION public."insertNumericValue"(inmongosensorid character varying, intime timestamp without time zone, invalue character varying, valuetype character varying)
+CREATE OR REPLACE FUNCTION public."insert_value_number"(mongo_id_sensor character varying, in_time timestamp without time zone, in_value NUMERIC)
  RETURNS integer
  LANGUAGE plpgsql
 AS $function$
 DECLARE
-    idSensor int;
-    idInsert INT;
-    tableName CHARACTER VARYING(15);
-    insertStatement CHARACTER VARYING(200);
+    _id_sensor integer;
+    _id_ts integer;
 BEGIN
-    SELECT sensors.idSensor INTO idSensor FROM sensors WHERE mongoIdSensor = inMongoSensorId;
-    IF NOT FOUND THEN
-      INSERT INTO "sensors" (mongoIdSensor, "type") VALUES (inMongoSensorId, valueType) RETURNING idSensor;
-    END IF;
-    tableName := ('series-' || valueType);
-    insertStatement := 'INSERT INTO %I (idSensor, "time", "value") VALUES (idSensor, inTime, inValue) RETURNING id';
-    EXECUTE format(insertStatement, tableName) INTO idInsert;
-    RETURN idInsert;
+    _id_sensor = exist_sensor(mongo_id_sensor, 'number');
+    INSERT INTO series_number(id_Sensor, "time", "value") VALUES (_id_sensor, in_time, in_value) RETURNING id INTO _id_ts;
+    RETURN _id_ts;
 END;
-$function$
+$function$;
+
+CREATE OR REPLACE FUNCTION public."exist_sensor"(in_mongo_id_sensor character varying, in_type character varying)
+ RETURNS integer
+AS $function$
+DECLARE
+    _id_sensor integer;
+BEGIN
+    SELECT id_sensor INTO _id_sensor FROM sensors WHERE sensors.mongo_id_sensor = in_mongo_id_sensor AND sensors.type = in_type;
+    IF NOT FOUND THEN
+        INSERT INTO sensors(mongo_id_sensor, "type") VALUES (sensor_id, in_type) RETURNING id_sensor into _id_sensor;
+    END IF;
+    RETURN _id_sensor;
+END;
+$function$  LANGUAGE plpgsql;
+
+SELECT exist_sensor('test', 'number');
+SELECT insert_value_number('test'::VARCHAR, LOCALTIMESTAMP, 10.0);
