@@ -5,7 +5,6 @@ const _ = require('lodash');
 const mongoClient = require('./db/mongo');
 const postgresClient = require('./db/postgres');
 
-
 const MONGO_DB_NAME = 'testtp';
 const SERIES_PREFIX = 'tss.';
 
