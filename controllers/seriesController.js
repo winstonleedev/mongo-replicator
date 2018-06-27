@@ -4,6 +4,7 @@ const postgresController = require('./postgresController');
 
 // Turn on/off series log
 const LOG_SERIES = false;
+const SERIES_PREFIX = 'tss.';
 
 function getTableType(sampleValue) {
   let numericalValue = +sampleValue;
@@ -38,4 +39,4 @@ function processDataInsertion(action, doc, collectionName) {
   return;
 }
 
-modules.exports.processDataInsertion = processDataInsertion;
+module.exports.processDataInsertion = processDataInsertion;
