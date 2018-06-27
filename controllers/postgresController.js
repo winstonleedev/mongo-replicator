@@ -2,7 +2,7 @@
 
 const async = require('async');
 
-const postgresClient = require('./db/postgres');
+const postgresClient = require('../db/postgres');
 
 function insertSeries(tableType, sensorId, time, value, cb) {
   postgresClient.query(

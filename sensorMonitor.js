@@ -2,7 +2,7 @@
 
 const nrpClient = require('./db/node-redis-pubsub');
 const postgresClient = require('./db/postgres');
-const devicesController = require('./devicesController');
+const devicesController = require('./controllers/devicesController');
 
 nrpClient.on('main:all', (data) => {
   // console.log('[redis-pubsub] data.eventId, data.id, data.operation', data.eventId, data.id, data.operation);

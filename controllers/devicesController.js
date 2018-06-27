@@ -1,7 +1,9 @@
 'use strict';
 
-const redisClient = require('./db/redis');
+const _ = require('lodash');
 const async = require('async');
+
+const redisClient = require('../db/redis');
 
 function listSensorsOnGateway(gatewayId, cb) {
   redisClient.hgetall('gateway:' + gatewayId, (err, reply) => {
@@ -40,5 +42,45 @@ function listSensorsOnDevice(deviceId, cb) {
   ], cb);
 }
 
+
+/**
+ * Flatten a combination of gateways, devices and sensors into a sensor list
+ * @param {*} devices
+ * @param {*} gateways
+ * @param {*} sensors
+ * @param {*} cb
+ */
+function flattenIntoSensorList(devices, gateways, sensors, cb) {
+  async.parallel([
+    (done) => {
+      async.map(
+        devices,
+        listSensorsOnDevice,
+        (err, results) => {
+          done(err, _.flatten(results));
+        });
+    },
+    (done) => {
+      async.map(
+        gateways,
+        listSensorsOnGateway,
+        (err, results) => {
+          done(err, _.flatten(results));
+        });
+    },
+    (done) => {
+      done(null, sensors);
+    }
+  ], (err, results) => {
+    if (!err) {
+      let flattened = _.flatten(results);
+      cb(err, flattened);
+    } else {
+      cb(err, null);
+    }
+  });
+}
+
 module.exports.listSensorsOnGateway = listSensorsOnGateway;
 module.exports.listSensorsOnDevice = listSensorsOnDevice;
+module.exports.flattenIntoSensorList = flattenIntoSensorList;
