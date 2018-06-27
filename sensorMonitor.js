@@ -1,8 +1,8 @@
 'use strict';
 
 const nrpClient = require('./db/node-redis-pubsub');
-const redisClient = require('./db/redis');
 const postgresClient = require('./db/postgres');
+const devicesController = require('./devicesController');
 
 nrpClient.on('main:all', (data) => {
   // console.log('[redis-pubsub] data.eventId, data.id, data.operation', data.eventId, data.id, data.operation);
@@ -14,7 +14,17 @@ nrpClient.on('main:all', (data) => {
   }
 });
 
-listSensors('1000000000000002');
+devicesController.listSensorsOnGateway('1000000000000002', (err, sensors) => {
+  if (!err && sensors) {
+    console.log(sensors);
+  }
+});
+
+devicesController.listSensorsOnDevice('5233d96c9ad24f3ba5a318a62593e997', (err, sensors) => {
+  if (!err && sensors) {
+    console.log(sensors);
+  }
+});
 
 /*
 [redis-pubsub] data.eventId, data.id, data.operation sensor smokeAlarm-gw_248300000853-COALARM D
@@ -38,33 +48,25 @@ Object {eventId: "sensor", id: "smokeAlarm-gw_248300000853-COALARM", operation: 
 Object {eventId: "gateway", id: "gw_248300000853", operation: "U", updatedItem: Object, prevItem: Object, …}
 */
 
-async function listSensors(gatewayId) { // jshint ignore:line
-  redisClient.hgetall('gateway:' + gatewayId, (err, reply) => {
-    console.log(err,reply);
-    console.log(err,JSON.parse(reply.sensors));
-  });
-  /*
-  Doesn't work
-
-  redisClient.smembers('gateway:' + gatewayId + ':sensors', (err, reply) => {
-    console.log(err,reply);
-  });
-  */
-  return [];
-}
-
 function sensorDeleted(sensorId) {
   removeSensorFromLabels(sensorId);
   removeSensorFromThings(sensorId);
 }
 
 function gatewayDeleted(gatewayId) {
-  listSensors(gatewayId).forEach((sensorId) => {
+  devicesController.listSensorsOnGateway(gatewayId).forEach((sensorId) => {
     sensorDeleted(sensorId);
   });
 }
 
 function removeSensorFromLabels(sensorId) {
+  postgresClient.query(
+    'SELECT * FROM "insert_value_' + tableType + '"($1, to_timestamp($2)::timestamp, $3)',
+    [sensorId, time, value],
+    (err, res) => {
+      /*jshint camelcase: false */
+      console.log('[insert result]', err ? err.message : res.rows[0].insert_value_number);
+    });
   return;
 }
 
