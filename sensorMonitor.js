@@ -1,7 +1,7 @@
 'use strict';
 
 const nrpClient = require('./db/node-redis-pubsub');
-const postgresClient = require('./db/postgres');
+const postgresController = require('./controllers/postgresController');
 const devicesController = require('./controllers/devicesController');
 
 nrpClient.on('main:all', (data) => {
@@ -15,8 +15,8 @@ nrpClient.on('main:all', (data) => {
 });
 
 function sensorDeleted(sensorId) {
-  removeSensorFromLabels(sensorId);
-  removeSensorFromThings(sensorId);
+  postgresController.removeSensorFromLabels(sensorId);
+  postgresController.removeSensorFromThings(sensorId);
 }
 
 function gatewayDeleted(gatewayId) {
@@ -26,27 +26,6 @@ function gatewayDeleted(gatewayId) {
     });
   });
 }
-
-function removeSensorFromLabels(sensorId) {
-  postgresClient.query(
-    'DELETE FROM label_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = \'$1\')',
-    [sensorId],
-    (err, res) => {
-      /*jshint camelcase: false */
-      console.log('[removeSensorFromLabels result]', res);
-    });
-}
-
-function removeSensorFromThings(sensorId) {
-  postgresClient.query(
-    'DELETE FROM thing_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = \'$1\')',
-    [sensorId],
-    (err, res) => {
-      /*jshint camelcase: false */
-      console.log('[removeSensorFromThings result]', res);
-    });
-}
-
 
 /*
 [redis-pubsub] data.eventId, data.id, data.operation sensor smokeAlarm-gw_248300000853-COALARM D

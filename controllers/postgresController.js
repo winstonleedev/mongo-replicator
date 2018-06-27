@@ -31,6 +31,28 @@ function insertLabel(labelId, sensors, cb) {
     cb);
 }
 
+function removeSensorFromLabels(sensorId) {
+  postgresClient.query(
+    'DELETE FROM label_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = \'$1\')',
+    [sensorId],
+    (err, res) => {
+      /*jshint camelcase: false */
+      console.log('[removeSensorFromLabels result]', res);
+    });
+}
+
+function removeSensorFromThings(sensorId) {
+  postgresClient.query(
+    'DELETE FROM thing_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = \'$1\')',
+    [sensorId],
+    (err, res) => {
+      /*jshint camelcase: false */
+      console.log('[removeSensorFromThings result]', res);
+    });
+}
+
 module.exports.insertSeries = insertSeries;
 module.exports.deleteLabel = deleteLabel;
 module.exports.insertLabel = insertLabel;
+module.exports.removeSensorFromLabels = removeSensorFromLabels;
+module.exports.removeSensorFromThings = removeSensorFromThings;
