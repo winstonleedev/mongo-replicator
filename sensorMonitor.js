@@ -14,17 +14,39 @@ nrpClient.on('main:all', (data) => {
   }
 });
 
-devicesController.listSensorsOnGateway('1000000000000002', (err, sensors) => {
-  if (!err && sensors) {
-    console.log(sensors);
-  }
-});
+function sensorDeleted(sensorId) {
+  removeSensorFromLabels(sensorId);
+  removeSensorFromThings(sensorId);
+}
 
-devicesController.listSensorsOnDevice('5233d96c9ad24f3ba5a318a62593e997', (err, sensors) => {
-  if (!err && sensors) {
-    console.log(sensors);
-  }
-});
+function gatewayDeleted(gatewayId) {
+  devicesController.listSensorsOnGateway(gatewayId, (err, sensors) => {
+    sensors.forEach((sensorId) => {
+      sensorDeleted(sensorId);
+    });
+  });
+}
+
+function removeSensorFromLabels(sensorId) {
+  postgresClient.query(
+    'DELETE FROM label_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = \'$1\')',
+    [sensorId],
+    (err, res) => {
+      /*jshint camelcase: false */
+      console.log('[removeSensorFromLabels result]', res);
+    });
+}
+
+function removeSensorFromThings(sensorId) {
+  postgresClient.query(
+    'DELETE FROM thing_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = \'$1\')',
+    [sensorId],
+    (err, res) => {
+      /*jshint camelcase: false */
+      console.log('[removeSensorFromThings result]', res);
+    });
+}
+
 
 /*
 [redis-pubsub] data.eventId, data.id, data.operation sensor smokeAlarm-gw_248300000853-COALARM D
@@ -47,30 +69,3 @@ Object {eventId: "sensor", id: "smokeAlarm-gw_248300000853-COALARM", operation: 
 [redis-pubsub] data -
 Object {eventId: "gateway", id: "gw_248300000853", operation: "U", updatedItem: Object, prevItem: Object, …}
 */
-
-function sensorDeleted(sensorId) {
-  removeSensorFromLabels(sensorId);
-  removeSensorFromThings(sensorId);
-}
-
-function gatewayDeleted(gatewayId) {
-  devicesController.listSensorsOnGateway(gatewayId).forEach((sensorId) => {
-    sensorDeleted(sensorId);
-  });
-}
-
-function removeSensorFromLabels(sensorId) {
-  postgresClient.query(
-    'SELECT * FROM "insert_value_' + tableType + '"($1, to_timestamp($2)::timestamp, $3)',
-    [sensorId, time, value],
-    (err, res) => {
-      /*jshint camelcase: false */
-      console.log('[insert result]', err ? err.message : res.rows[0].insert_value_number);
-    });
-  return;
-}
-
-function removeSensorFromThings(sensorId) {
-  return;
-}
-
