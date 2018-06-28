@@ -4,6 +4,7 @@ const _ = require('lodash');
 const async = require('async');
 
 const redisClient = require('../db/redis');
+const postgresController = require('./postgresController');
 
 function listSensorsOnGateway(gatewayId, cb) {
   redisClient.hgetall('gateway:' + gatewayId, (err, reply) => {
@@ -81,6 +82,21 @@ function flattenIntoSensorList(devices, gateways, sensors, cb) {
   });
 }
 
+function sensorDeleted(sensorId) {
+  postgresController.removeSensorFromLabels(sensorId);
+  postgresController.removeSensorFromThings(sensorId);
+}
+
+function gatewayDeleted(gatewayId) {
+  listSensorsOnGateway(gatewayId, (err, sensors) => {
+    sensors.forEach((sensorId) => {
+      sensorDeleted(sensorId);
+    });
+  });
+}
+
 module.exports.listSensorsOnGateway = listSensorsOnGateway;
 module.exports.listSensorsOnDevice = listSensorsOnDevice;
 module.exports.flattenIntoSensorList = flattenIntoSensorList;
+module.exports.sensorDeleted = sensorDeleted;
+module.exports.gatewayDeleted = gatewayDeleted;

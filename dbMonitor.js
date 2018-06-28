@@ -13,8 +13,7 @@ const THINGS_COLLECTION = 'things';
 
 const pipeline = [
   {
-    $match:
-      { 'ns.db': MONGO_DB_NAME },
+    $match: { 'ns.db': MONGO_DB_NAME },
   }
 ];
 
