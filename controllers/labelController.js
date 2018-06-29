@@ -66,6 +66,12 @@ function processLabelChange(operationType, fullDocument, documentKey, updateDesc
 
 function initLabels(db) {
   let collection = db.collection(LABEL_COLLECTION);
+  let cursor = collection.find({}, {});
+  cursor.each((err, document) => {
+    if (document) {
+      processInsertLabel(document._id, document);
+    }
+  });
 }
 
 module.exports.processLabelChange = processLabelChange;

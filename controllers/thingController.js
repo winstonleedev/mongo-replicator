@@ -96,6 +96,12 @@ function processThingChange(db, operationType, fullDocument, documentKey, update
 
 function initThings(db) {
   let collection = db.collection(THING_COLLECTION);
+  let cursor = collection.find({}, {});
+  cursor.each((err, document) => {
+    if (document) {
+      processInsertThing(collection, document._id);
+    }
+  });
 }
 
 module.exports.processThingChange = processThingChange;
