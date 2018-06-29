@@ -3,7 +3,8 @@
 const postgresController = require('./postgresController');
 const devicesController = require('./devicesController');
 
-const LOG_LABEL = true;
+const LOG = true;
+const LABEL_COLLECTION = 'labels';
 
 function processInsertLabel(labelId, fullDocument) {
   console.log('[label insert] Request', labelId);
@@ -14,7 +15,7 @@ function processInsertLabel(labelId, fullDocument) {
   devicesController.flattenIntoSensorList(devices, gateways, sensors, (err, flattenedSensors) => {
     postgresController.deleteLabel(labelId, (err) => {
         !err && postgresController.insertLabel(labelId, flattenedSensors, (err) => {
-          if (!err && LOG_LABEL) {
+          if (!err && LOG) {
             console.log('[label insert] Success!', labelId, flattenedSensors);
           }
         });// jshint ignore:line
@@ -31,7 +32,7 @@ function processUpdateLabel(labelId, updateDescription) {
   devicesController.flattenIntoSensorList(devices, gateways, sensors, (err, flattenedSensors) => {
     postgresController.deleteLabel(labelId, (err) => {
         !err && postgresController.insertLabel(labelId, flattenedSensors, (err) => {
-          if (!err && LOG_LABEL) {
+          if (!err && LOG) {
             console.log('[label update] Success!', labelId, flattenedSensors);
           }
         });// jshint ignore:line
@@ -42,7 +43,7 @@ function processUpdateLabel(labelId, updateDescription) {
 function processDeleteLabel(labelId) {
   console.log('[label delete] Request', labelId);
     postgresController.deleteLabel(labelId, (err) => {
-      if (!err && LOG_LABEL) {
+      if (!err && LOG) {
         console.log('[label delete] Success!', labelId);
       }
     });
@@ -63,10 +64,9 @@ function processLabelChange(operationType, fullDocument, documentKey, updateDesc
   return;
 }
 
-function processThingChange(operationType, fullDocument) {
-  console.log('[rebuildThing]', operationType, fullDocument);
-  return;
+function initLabels(db) {
+  let collection = db.collection(LABEL_COLLECTION);
 }
 
 module.exports.processLabelChange = processLabelChange;
-module.exports.processThingChange = processThingChange;
+module.exports.initLabels = initLabels;

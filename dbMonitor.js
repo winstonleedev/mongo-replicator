@@ -4,6 +4,7 @@ const _ = require('lodash');
 
 const mongoClient = require('./db/mongo');
 const labelController = require('./controllers/labelController');
+const thingController = require('./controllers/thingController');
 const seriesController = require('./controllers/seriesController');
 
 const MONGO_DB_NAME = 'testtp';
@@ -28,7 +29,7 @@ mongoClient(
       } else if (change.ns.coll === LABEL_COLLECTION) {
         labelController.processLabelChange(change.operationType, change.fullDocument, change.documentKey, change.updateDescription);
       } else if (change.ns.coll === THINGS_COLLECTION) {
-        labelController.processThingChange(change.operationType, change.fullDocument);
+        thingController.processThingChange(db, change.operationType, change.fullDocument, change.documentKey, change.updateDescription);
       }
     }, pipeline);
   },

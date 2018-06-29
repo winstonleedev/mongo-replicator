@@ -31,6 +31,26 @@ function insertLabel(labelId, sensors, cb) {
     cb);
 }
 
+function deleteThing(labelId, cb) {
+  postgresClient.query(
+    'DELETE FROM thing_sensor WHERE mongo_id_thing = $1',
+    [labelId],
+    cb);
+}
+
+function insertThing(thingId, sensors, cb) {
+  async.each(
+    sensors,
+    (sensor, done) => {
+      postgresClient.query(
+        'INSERT INTO thing_sensor(id_sensor, mongo_id_thing) VALUES ((SELECT id_sensor FROM sensors WHERE (sensors.mongo_id_sensor = $1::text)), $2)',
+        [sensor, thingId],
+        // Ignore errors due to sensors without series data, as we can't do statistics against them anyway
+        (err, result) => done(null, result));
+    },
+    cb);
+}
+
 function removeSensorFromLabels(sensorId) {
   postgresClient.query(
     'DELETE FROM label_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = \'$1\')',
@@ -54,5 +74,7 @@ function removeSensorFromThings(sensorId) {
 module.exports.insertSeries = insertSeries;
 module.exports.deleteLabel = deleteLabel;
 module.exports.insertLabel = insertLabel;
+module.exports.deleteThing = deleteThing;
+module.exports.insertThing = insertThing;
 module.exports.removeSensorFromLabels = removeSensorFromLabels;
 module.exports.removeSensorFromThings = removeSensorFromThings;
