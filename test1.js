@@ -1,6 +1,6 @@
 'use strict';
 
-const devicesController = require('./devicesController');
+const devicesController = require('./controllers/devicesController');
 
 // Test code: List sensors
 devicesController.listSensorsOnGateway('1000000000000002', (err, sensors) => {

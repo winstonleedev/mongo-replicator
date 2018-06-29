@@ -29,7 +29,7 @@ mongoClient(
       } else if (change.ns.coll === LABEL_COLLECTION) {
         labelController.processLabelChange(change.operationType, change.fullDocument, change.documentKey, change.updateDescription);
       } else if (change.ns.coll === THINGS_COLLECTION) {
-        thingController.processThingChange(db, change.operationType, change.fullDocument, change.documentKey, change.updateDescription);
+        thingController.processThingChange(db, change.operationType, change.documentKey);
       }
     }, pipeline);
   },

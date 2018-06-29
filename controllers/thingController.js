@@ -78,7 +78,7 @@ function processDeleteThing(thingId) {
   });
 }
 
-function processThingChange(db, operationType, fullDocument, documentKey, updateDescription) {
+function processThingChange(db, operationType, documentKey) {
   let collection = db.collection(THING_COLLECTION);
   let thingId = documentKey._id;
 
@@ -89,7 +89,7 @@ function processThingChange(db, operationType, fullDocument, documentKey, update
   } else if (operationType === 'update') {
     processUpdateThing(collection, thingId);
   } else {
-    console.log('[thing unknown]', thingId, operationType, documentKey, updateDescription);
+    console.log('[thing unknown]', thingId, operationType, documentKey);
   }
   return;
 }
@@ -97,10 +97,15 @@ function processThingChange(db, operationType, fullDocument, documentKey, update
 function initThings(db) {
   let collection = db.collection(THING_COLLECTION);
   let cursor = collection.find({}, {});
-  cursor.each((err, document) => {
-    if (document) {
-      processInsertThing(collection, document._id);
+  postgresController.getStoredThings((err, things) => {
+    if (err) {
+      things = [];
     }
+    cursor.each((err, document) => {
+      if (document && !things.includes(document._id)) {
+        processInsertThing(collection, document._id);
+      }
+    });
   });
 }
 

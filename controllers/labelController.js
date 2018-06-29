@@ -67,10 +67,15 @@ function processLabelChange(operationType, fullDocument, documentKey, updateDesc
 function initLabels(db) {
   let collection = db.collection(LABEL_COLLECTION);
   let cursor = collection.find({}, {});
-  cursor.each((err, document) => {
-    if (document) {
-      processInsertLabel(document._id, document);
+  postgresController.getStoredLabels((err, labels) => {
+    if (err) {
+      labels = [];
     }
+    cursor.each((err, document) => {
+      if (document && !labels.includes(document._id)) {
+        processInsertLabel(document._id, document);
+      }
+    });
   });
 }
 

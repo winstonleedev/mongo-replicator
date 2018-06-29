@@ -1,6 +1,7 @@
 'use strict';
 
 const async = require('async');
+const _ = require('lodash');
 
 const postgresClient = require('../db/postgres');
 
@@ -71,6 +72,36 @@ function removeSensorFromThings(sensorId) {
     });
 }
 
+function getStoredThings(cb) {
+  postgresClient.query(
+    'SELECT DISTINCT mongo_id_thing FROM thing_sensor',
+    [],
+    (err, res) => {
+      if (!err) {
+        /*jshint camelcase: false */
+        let arrayOfThingIds = _.map(res.rows, (row) => parseInt(row.mongo_id_thing));
+        cb(err, arrayOfThingIds);
+      } else {
+        cb(err);
+      }
+    });
+}
+
+function getStoredLabels(cb) {
+  postgresClient.query(
+    'SELECT DISTINCT mongo_id_label FROM label_sensor',
+    [],
+    (err, res) => {
+      if (!err) {
+        /*jshint camelcase: false */
+        let arrayOfLabelIds = _.map(res.rows, (row) => parseInt(row.mongo_id_label));
+        cb(err, arrayOfLabelIds);
+      } else {
+        cb(err);
+      }
+    });
+}
+
 module.exports.insertSeries = insertSeries;
 module.exports.deleteLabel = deleteLabel;
 module.exports.insertLabel = insertLabel;
@@ -78,3 +109,5 @@ module.exports.deleteThing = deleteThing;
 module.exports.insertThing = insertThing;
 module.exports.removeSensorFromLabels = removeSensorFromLabels;
 module.exports.removeSensorFromThings = removeSensorFromThings;
+module.exports.getStoredLabels = getStoredLabels;
+module.exports.getStoredThings = getStoredThings;
