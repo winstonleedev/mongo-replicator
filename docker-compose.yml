@@ -35,6 +35,14 @@ services:
     ports:
       - '5432:5432'
 
+  mariadb:
+    image: mariadb
+    restart: always
+    ports:
+      - '3306:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD: topsecret
+
 networks:
   default:
     name: mongo-network

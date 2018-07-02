@@ -12,6 +12,7 @@
   "dependencies": {
     "async": "^2.6.1",
     "lodash": "^4.17.10",
+    "mariasql": "^0.2.6",
     "mongodb": "github:thanhphu/node-mongodb-native",
     "node-redis-pubsub": "^2.0.0",
     "pg": "^7.4.3",
