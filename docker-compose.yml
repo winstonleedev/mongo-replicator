@@ -41,7 +41,8 @@ services:
     ports:
       - '3306:3306'
     environment:
-      - MYSQL_ROOT_PASSWORD: topsecret
+      - MYSQL_DATABASE='testtp'
+      - MYSQL_ROOT_PASSWORD='topsecret'
 
 networks:
   default:
