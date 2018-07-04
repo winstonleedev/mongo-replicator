@@ -3,9 +3,9 @@
 const { Client } = require('mariasql');
 const DB_NAME = 'testtp';
 const mariaClient = new Client({
-  user: 'root',
+  user: 'thingplus',
   host: 'localhost',
-  password: 'topsecret',
+  password: 'thingplus',
   db: DB_NAME
 });
 

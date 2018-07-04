@@ -43,10 +43,12 @@ services:
     volumes:
       - ./sql/data:/var/lib/mysql:rw,delegated
     environment:
-      - MYSQL_DATABASE='testtp'
+      - MYSQL_ROOT_HOST='%'
       - MYSQL_RANDOM_ROOT_PASSWORD='yes'
       - MYSQL_USER='thingplus'
       - MYSQL_PASSWORD='thingplus'
+      - MYSQL_DATABASE='testtp'
+  # GRANT ALL PRIVILEGES ON *.* TO ’thingplus'@'%' IDENTIFIED BY 'thingplus' WITH GRANT OPTION;
 
 networks:
   default:
