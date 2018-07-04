@@ -6,7 +6,7 @@ const connection = mysql.createConnection({
   user: 'thingplus',
   host: 'localhost',
   password: 'thingplus',
-  db: DB_NAME
+  database: DB_NAME
 });
 
 connection.connect();
@@ -17,4 +17,3 @@ function shutdown() {
 
 module.exports.client = connection;
 module.exports.shutdown = shutdown;
-module.exports.DB_NAME = DB_NAME;

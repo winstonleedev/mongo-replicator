@@ -1,13 +1,13 @@
 'use strict';
 
-const postgresController = require('./controllers/postgresController');
+const rdbController = require('./controllers/rdbController');
 
-postgresController.getStoredThings((err, things) => {
+rdbController.getStoredThings((err, things) => {
   console.log(things);
   // process.exit(0);
 });
 
-postgresController.getStoredLabels((err, labels) => {
+rdbController.getStoredLabels((err, labels) => {
   console.log(labels);
   // process.exit(0);
 });

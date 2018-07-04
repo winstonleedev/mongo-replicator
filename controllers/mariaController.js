@@ -3,12 +3,11 @@
 const async = require('async');
 const _ = require('lodash');
 
-const DB_NAME = require('../db/mariadb').DB_NAME;
 const client = require('../db/mariadb').client;
 
 function insertSeries(tableType, sensorId, time, value, cb) {
   client.query(
-    'SELECT `' + DB_NAME + '`.insert_value_' + tableType + '(?, ?, ?)',
+    'SELECT insert_value_' + tableType + '(?, ?, ?)',
     [sensorId, time, value],
     cb
   );
@@ -29,10 +28,7 @@ function insertLabel(labelId, sensors, cb) {
         'INSERT INTO label_sensor(id_sensor, mongo_id_label) VALUES ((SELECT id_sensor FROM sensors WHERE (sensors.mongo_id_sensor = ?)), ?)',
         [sensor, labelId],
         // Ignore errors due to sensors without series data, as we can't do statistics against them anyway
-        (err, result) => {
-          console.log('[insert label]', err, result);
-          done(null, result);
-        });
+        (err, result) => done(null, result));
     },
     cb);
 }
@@ -52,10 +48,7 @@ function insertThing(thingId, sensors, cb) {
         'INSERT INTO thing_sensor(id_sensor, mongo_id_thing) VALUES ((SELECT id_sensor FROM sensors WHERE (sensors.mongo_id_sensor = ?)), ?)',
         [sensor, thingId],
         // Ignore errors due to sensors without series data, as we can't do statistics against them anyway
-        (err, result) => {
-          console.log('[insert thing]', err, result);
-          done(null, result);
-        });
+        (err, result) => done(null, result));
     },
     cb);
 }
@@ -87,7 +80,7 @@ function getStoredThings(cb) {
     (err, res) => {
       if (!err) {
         /*jshint camelcase: false */
-        let arrayOfThingIds = _.map(res.rows, (row) => parseInt(row.mongo_id_thing));
+        let arrayOfThingIds = _.map(res, (row) => parseInt(row.mongo_id_thing));
         cb(err, arrayOfThingIds);
       } else {
         cb(err);
@@ -102,7 +95,7 @@ function getStoredLabels(cb) {
     (err, res) => {
       if (!err) {
         /*jshint camelcase: false */
-        let arrayOfLabelIds = _.map(res.rows, (row) => parseInt(row.mongo_id_label));
+        let arrayOfLabelIds = _.map(res, (row) => parseInt(row.mongo_id_label));
         cb(err, arrayOfLabelIds);
       } else {
         cb(err);
