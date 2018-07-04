@@ -29,11 +29,11 @@ services:
       - ./scripts:/scripts
     entrypoint: [ "bash", "/scripts/mongosetup.sh" ]
 
-  postgres:
-    image: postgres
-    restart: always
-    ports:
-      - '5432:5432'
+  # postgres:
+  #   image: postgres
+  #   restart: always
+  #   ports:
+  #     - '5432:5432'
 
   mariadb:
     image: mariadb
