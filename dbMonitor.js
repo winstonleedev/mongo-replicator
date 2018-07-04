@@ -21,6 +21,10 @@ const pipeline = [
 mongoClient(
   (client) => {
     let db = client.db(MONGO_DB_NAME);
+
+    labelController.initLabels(db);
+    thingController.initThings(db);
+
     const changeStream = db.watch();
     // start listen to changes
     changeStream.on('change', (change) => {
