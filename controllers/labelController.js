@@ -1,6 +1,6 @@
 'use strict';
 
-const postgresController = require('./postgresController');
+const rdbController = require('./rdbController');
 const devicesController = require('./devicesController');
 
 const LOG = true;
@@ -13,8 +13,8 @@ function processInsertLabel(labelId, fullDocument) {
   let sensors = fullDocument.item.target.sensors;
 
   devicesController.flattenIntoSensorList(devices, gateways, sensors, (err, flattenedSensors) => {
-    postgresController.deleteLabel(labelId, (err) => {
-        !err && postgresController.insertLabel(labelId, flattenedSensors, (err) => {
+    rdbController.deleteLabel(labelId, (err) => {
+        !err && rdbController.insertLabel(labelId, flattenedSensors, (err) => {
           if (!err && LOG) {
             console.log('[label insert] Success!', labelId, flattenedSensors);
           }
@@ -30,8 +30,8 @@ function processUpdateLabel(labelId, updateDescription) {
   let sensors = updateDescription.updatedFields['item.target'].sensors;
 
   devicesController.flattenIntoSensorList(devices, gateways, sensors, (err, flattenedSensors) => {
-    postgresController.deleteLabel(labelId, (err) => {
-        !err && postgresController.insertLabel(labelId, flattenedSensors, (err) => {
+    rdbController.deleteLabel(labelId, (err) => {
+        !err && rdbController.insertLabel(labelId, flattenedSensors, (err) => {
           if (!err && LOG) {
             console.log('[label update] Success!', labelId, flattenedSensors);
           }
@@ -42,7 +42,7 @@ function processUpdateLabel(labelId, updateDescription) {
 
 function processDeleteLabel(labelId) {
   console.log('[label delete] Request', labelId);
-    postgresController.deleteLabel(labelId, (err) => {
+    rdbController.deleteLabel(labelId, (err) => {
       if (!err && LOG) {
         console.log('[label delete] Success!', labelId);
       }
@@ -67,7 +67,7 @@ function processLabelChange(operationType, fullDocument, documentKey, updateDesc
 function initLabels(db) {
   let collection = db.collection(LABEL_COLLECTION);
   let cursor = collection.find({}, {});
-  postgresController.getStoredLabels((err, labels) => {
+  rdbController.getStoredLabels((err, labels) => {
     if (err) {
       labels = [];
     }

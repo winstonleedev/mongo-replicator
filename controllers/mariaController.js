@@ -7,14 +7,14 @@ const client = require('../db/mariadb');
 
 function insertSeries(tableType, sensorId, time, value, cb) {
   client.query(
-    'SELECT * FROM "insert_value_' + tableType + '"($1, to_timestamp($2)::timestamp, $3)',
+    'SELECT * FROM "insert_value_' + tableType + '"(?, to_timestamp(?)::timestamp, ?)',
     [sensorId, time, value],
     cb);
 }
 
 function deleteLabel(labelId, cb) {
   client.query(
-    'DELETE FROM label_sensor WHERE mongo_id_label = $1',
+    'DELETE FROM label_sensor WHERE mongo_id_label = ?',
     [labelId],
     cb);
 }
@@ -24,7 +24,7 @@ function insertLabel(labelId, sensors, cb) {
     sensors,
     (sensor, done) => {
       client.query(
-        'INSERT INTO label_sensor(id_sensor, mongo_id_label) VALUES ((SELECT id_sensor FROM sensors WHERE (sensors.mongo_id_sensor = $1::text)), $2)',
+        'INSERT INTO label_sensor(id_sensor, mongo_id_label) VALUES ((SELECT id_sensor FROM sensors WHERE (sensors.mongo_id_sensor = ?::text)), ?)',
         [sensor, labelId],
         // Ignore errors due to sensors without series data, as we can't do statistics against them anyway
         (err, result) => done(null, result));
@@ -34,7 +34,7 @@ function insertLabel(labelId, sensors, cb) {
 
 function deleteThing(labelId, cb) {
   client.query(
-    'DELETE FROM thing_sensor WHERE mongo_id_thing = $1',
+    'DELETE FROM thing_sensor WHERE mongo_id_thing = ?',
     [labelId],
     cb);
 }
@@ -44,7 +44,7 @@ function insertThing(thingId, sensors, cb) {
     sensors,
     (sensor, done) => {
       client.query(
-        'INSERT INTO thing_sensor(id_sensor, mongo_id_thing) VALUES ((SELECT id_sensor FROM sensors WHERE (sensors.mongo_id_sensor = $1::text)), $2)',
+        'INSERT INTO thing_sensor(id_sensor, mongo_id_thing) VALUES ((SELECT id_sensor FROM sensors WHERE (sensors.mongo_id_sensor = ?::text)), ?)',
         [sensor, thingId],
         // Ignore errors due to sensors without series data, as we can't do statistics against them anyway
         (err, result) => done(null, result));
@@ -54,7 +54,7 @@ function insertThing(thingId, sensors, cb) {
 
 function removeSensorFromLabels(sensorId) {
   client.query(
-    'DELETE FROM label_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = \'$1\')',
+    'DELETE FROM label_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = ?)',
     [sensorId],
     (err, res) => {
       /*jshint camelcase: false */
@@ -64,7 +64,7 @@ function removeSensorFromLabels(sensorId) {
 
 function removeSensorFromThings(sensorId) {
   client.query(
-    'DELETE FROM thing_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = \'$1\')',
+    'DELETE FROM thing_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = ?)',
     [sensorId],
     (err, res) => {
       /*jshint camelcase: false */

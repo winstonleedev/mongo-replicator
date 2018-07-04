@@ -1,19 +1,19 @@
 'use strict';
 
-const { Client } = require('mariasql');
+const mysql = require('mysql');
 const DB_NAME = 'testtp';
-const mariaClient = new Client({
+const client = mysql.createConnection({
   user: 'thingplus',
   host: 'localhost',
   password: 'thingplus',
   db: DB_NAME
 });
 
-mariaClient.connect();
+client.connect();
 
 function shutdown() {
-  mariaClient.end();
+  client.end();
 }
 
-module.exports.client = mariaClient;
+module.exports.client = client;
 module.exports.shutdown = shutdown;

@@ -3,7 +3,7 @@
 const async = require('async');
 const _ = require('lodash');
 
-const postgresController = require('./postgresController');
+const rdbController = require('./rdbController');
 
 const LOG = true;
 const THING_COLLECTION = 'things';
@@ -71,7 +71,7 @@ function processUpdateThing(collection, thingId) {
 
 function processDeleteThing(thingId) {
   console.log('[thing delete] Request', thingId);
-  postgresController.deleteThing(thingId, (err) => {
+  rdbController.deleteThing(thingId, (err) => {
     if (!err && LOG) {
       console.log('[thing delete] Success!', thingId);
     }
@@ -97,7 +97,7 @@ function processThingChange(db, operationType, documentKey) {
 function initThings(db) {
   let collection = db.collection(THING_COLLECTION);
   let cursor = collection.find({}, {});
-  postgresController.getStoredThings((err, things) => {
+  rdbController.getStoredThings((err, things) => {
     if (err) {
       things = [];
     }

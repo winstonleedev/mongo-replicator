@@ -1,6 +1,6 @@
 'use strict';
 
-const postgresController = require('./postgresController');
+const rdbController = require('./rdbController');
 
 // Turn on/off series log
 const LOG_SERIES = false;
@@ -27,7 +27,7 @@ function processDataInsertion(action, doc, collectionName) {
     let value = doc.value;
     let tableType = getTableType(doc.value);
 
-    postgresController.insertSeries(tableType, sensorId, time, value, (err, res) => {
+    rdbController.insertSeries(tableType, sensorId, time, value, (err, res) => {
       if (LOG_SERIES) {
         /*jshint camelcase: false */
         console.log('[insert result]', err ? err.message : res.rows[0].insert_value_number);
