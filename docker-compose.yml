@@ -40,9 +40,13 @@ services:
     restart: always
     ports:
       - '3306:3306'
+    volumes:
+      - ./sql/data:/var/lib/mysql:rw,delegated
     environment:
       - MYSQL_DATABASE='testtp'
-      - MYSQL_ROOT_PASSWORD='topsecret'
+      - MYSQL_RANDOM_ROOT_PASSWORD='yes'
+      - MYSQL_USER='thingplus'
+      - MYSQL_PASSWORD='thingplus'
 
 networks:
   default:
