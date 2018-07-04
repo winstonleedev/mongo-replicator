@@ -44,11 +44,11 @@ function flattenThing(collection, thingId, cb) {
     },
     // For the current thing, update (this will be done recursively)
     (sensors, next) => {
-      postgresController.deleteThing(thingId, (err) => {
+      rdbController.deleteThing(thingId, (err) => {
         if (err) {
           return next(err);
         }
-        postgresController.insertThing(thingId, sensors, (err) => {
+        rdbController.insertThing(thingId, sensors, (err) => {
           console.log('[thing insert] Done for one thing', err, thingId, sensors);
           next(err, sensors);
         });// jshint ignore:line

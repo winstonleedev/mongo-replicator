@@ -1,6 +1,7 @@
 'use strict';
 
 const rdbController = require('./rdbController');
+const moment = require('moment');
 
 // Turn on/off series log
 const LOG_SERIES = false;
@@ -23,7 +24,7 @@ function processDataInsertion(action, doc, collectionName) {
 
   let sensorId = collectionName.substring(SERIES_PREFIX.length);
   if (action === 'insert') {
-    let time = +Math.round(doc.ctime / 1000);
+    let time = moment(doc.ctime).format('YYYY-MM-DD HH:mm:ss');
     let value = doc.value;
     let tableType = getTableType(doc.value);
 

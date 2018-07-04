@@ -2,18 +2,19 @@
 
 const mysql = require('mysql');
 const DB_NAME = 'testtp';
-const client = mysql.createConnection({
+const connection = mysql.createConnection({
   user: 'thingplus',
   host: 'localhost',
   password: 'thingplus',
   db: DB_NAME
 });
 
-client.connect();
+connection.connect();
 
 function shutdown() {
-  client.end();
+  connection.end();
 }
 
-module.exports.client = client;
+module.exports.client = connection;
 module.exports.shutdown = shutdown;
+module.exports.DB_NAME = DB_NAME;

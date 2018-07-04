@@ -12,6 +12,7 @@
   "dependencies": {
     "async": "^2.6.1",
     "lodash": "^4.17.10",
+    "moment": "^2.22.2",
     "mongodb": "github:thanhphu/node-mongodb-native",
     "mysql": "^2.15.0",
     "node-redis-pubsub": "^2.0.0",

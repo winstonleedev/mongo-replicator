@@ -29,6 +29,7 @@ BEGIN
 END;
 
 SELECT insert_value_string('test3', LOCALTIMESTAMP, 'a string');
+SELECT insert_value_number('test4', LOCALTIMESTAMP, 999);
 
 -- ALTER TABLE series_string MODIFY id int NOT NULL AUTO_INCREMENT;
 -- ALTER TABLE series_number MODIFY id int NOT NULL AUTO_INCREMENT;
