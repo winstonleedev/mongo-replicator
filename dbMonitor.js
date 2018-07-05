@@ -22,8 +22,8 @@ mongoClient(
   (client) => {
     let db = client.db(MONGO_DB_NAME);
 
-    labelController.initLabels(db);
-    thingController.initThings(db);
+    labelController.syncLabels(db);
+    thingController.syncThings(db);
 
     const changeStream = db.watch();
     // start listen to changes

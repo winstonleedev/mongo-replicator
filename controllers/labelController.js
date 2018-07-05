@@ -64,7 +64,7 @@ function processLabelChange(operationType, fullDocument, documentKey, updateDesc
   return;
 }
 
-function initLabels(db) {
+function syncLabels(db) {
   let collection = db.collection(LABEL_COLLECTION);
   let cursor = collection.find({}, {});
   rdbController.getStoredLabels((err, labels) => {
@@ -80,4 +80,4 @@ function initLabels(db) {
 }
 
 module.exports.processLabelChange = processLabelChange;
-module.exports.initLabels = initLabels;
+module.exports.syncLabels = syncLabels;

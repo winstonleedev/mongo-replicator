@@ -8,9 +8,7 @@ const LOG_SERIES = false;
 const SERIES_PREFIX = 'tss.';
 
 function getTableType(sampleValue) {
-  let numericalValue = +sampleValue;
-  let tableType = isNaN(numericalValue) ? 'string' : 'number';
-  return tableType;
+  return isNaN(sampleValue) ? 'string' : 'number';
 }
 
 function processDataInsertion(action, doc, collectionName) {
@@ -23,20 +21,21 @@ function processDataInsertion(action, doc, collectionName) {
   */
 
   let sensorId = collectionName.substring(SERIES_PREFIX.length);
-  if (action === 'insert') {
-    let time = moment(doc.ctime).format('YYYY-MM-DD HH:mm:ss');
-    let value = doc.value;
-    let tableType = getTableType(doc.value);
-
-    rdbController.insertSeries(tableType, sensorId, time, value, (err, res) => {
-      if (LOG_SERIES) {
-        /*jshint camelcase: false */
-        console.log('[insert result]', err ? err.message : res.rows[0].insert_value_number);
-      }
-    });
-  } else {
-    console.log('[other action]', action, doc, collectionName);
+  if (action !== 'insert') {
+    console.log('[unknown series action]', action, doc, collectionName);
+    return;
   }
+
+  let time = moment(doc.ctime).format('YYYY-MM-DD HH:mm:ss');
+  let value = doc.value;
+  let tableType = getTableType(doc.value);
+
+  rdbController.insertSeries(tableType, sensorId, time, value, (err, res) => {
+    if (LOG_SERIES) {
+      /*jshint camelcase: false */
+      console.log('[insert result]', err ? err.message : res);
+    }
+  });
   return;
 }
 

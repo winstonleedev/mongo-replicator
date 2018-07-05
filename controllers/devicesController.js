@@ -19,19 +19,19 @@ function listSensorsOnGateway(gatewayId, cb) {
 function listSensorsOnDevice(deviceId, cb) {
   async.waterfall([
     // Get device's gateway
-    (next) => {
+    function getDeviceGateway(next) {
       redisClient.hgetall('device:' + deviceId, (err, reply) => {
         if (!err && reply.owner) {
           next(null, reply.owner);
         } else {
-          next(err, reply);
+          next(new Error('Device owner gateway not found ' + deviceId), null);
         }
       });
     },
     // Get gateway's sensors
     listSensorsOnGateway,
     // Filter sensors to keep only those match the device
-    (sensors, next) => {
+    function filterSensorsBelongToDevice(sensors, next) {
       async.filter(
         sensors,
         (sensor, filterNext) => redisClient.hgetall('sensor:' + sensor, (err, sensorData) => {
@@ -53,7 +53,7 @@ function listSensorsOnDevice(deviceId, cb) {
  */
 function flattenIntoSensorList(devices, gateways, sensors, cb) {
   async.parallel([
-    (done) => {
+    function convertDevicesToSensors (done) {
       async.map(
         devices,
         listSensorsOnDevice,
@@ -61,7 +61,7 @@ function flattenIntoSensorList(devices, gateways, sensors, cb) {
           done(err, _.flatten(results));
         });
     },
-    (done) => {
+    function convertGatewaysToSensors(done) {
       async.map(
         gateways,
         listSensorsOnGateway,

@@ -9,6 +9,23 @@ const LOG = true;
 const THING_COLLECTION = 'things';
 
 function getSensorsFromMap(mapObj) {
+  /**
+   * Sample mapObj
+    {
+        "humidity" : {
+            "owner" : "cf16cef90aa944c9ad6e0021ca88df7f",
+            "id" : "humidityDaliworks-cf16cef90aa944c9ad6e0021ca88df7f",
+            "field" : "series",
+            "type" : "sensor"
+        },
+        "temperature" : {
+            "field" : "series",
+            "owner" : "cf16cef90aa944c9ad6e0021ca88df7f",
+            "id" : "temperatureDaliworks-cf16cef90aa944c9ad6e0021ca88df7f",
+            "type" : "sensor"
+        }
+    }
+   */
   let mySensors = [];
   for (let key in mapObj) {
     if (mapObj[key].id) {
@@ -21,11 +38,11 @@ function getSensorsFromMap(mapObj) {
 function flattenThing(collection, thingId, cb) {
   async.waterfall([
     // Find target thing in DB
-    (next) => {
+    function findThingId(next) {
       collection.findOne({ '_id': thingId }, next);
     },
     // Combine children and sensor from child things
-    (thing, next) => {
+    function combineSensorsWithChildrenSensors(thing, next) {
       let sensors = [];
       if (thing.item.map) {
         sensors = getSensorsFromMap(thing.item.map);
@@ -39,11 +56,11 @@ function flattenThing(collection, thingId, cb) {
       async.map(
         children,
         (thingItem, next) => flattenThing(collection, thingItem, next),
-        (err, comingSensorArray) => next(err, sensors.concat(_.flatten(comingSensorArray)))
+        (err, sensorArrayOfChild) => next(err, sensors.concat(_.flatten(sensorArrayOfChild)))
       );
     },
     // For the current thing, update (this will be done recursively)
-    (sensors, next) => {
+    function updateThing(sensors, next) {
       rdbController.deleteThing(thingId, (err) => {
         if (err) {
           return next(err);
@@ -94,7 +111,7 @@ function processThingChange(db, operationType, documentKey) {
   return;
 }
 
-function initThings(db) {
+function syncThings(db) {
   let collection = db.collection(THING_COLLECTION);
   let cursor = collection.find({}, {});
   rdbController.getStoredThings((err, things) => {
@@ -110,4 +127,4 @@ function initThings(db) {
 }
 
 module.exports.processThingChange = processThingChange;
-module.exports.initThings = initThings;
+module.exports.syncThings = syncThings;
