@@ -101,10 +101,13 @@ delimiter $$$
 CREATE DEFINER=`thingplus`@`%` FUNCTION `exist_sensor`(in_mongo_id_sensor VARCHAR(200), in_is_number BIT) RETURNS int(11)
 BEGIN
     declare _id_sensor INTEGER;
-    SELECT id_sensor INTO _id_sensor FROM sensors WHERE sensors.mongo_id_sensor = in_mongo_id_sensor AND sensors.is_number = in_is_number;
+    declare _is_number INTEGER;
+    SELECT id_sensor, is_number INTO _id_sensor, _is_number FROM sensors WHERE mongo_id_sensor = in_mongo_id_sensor;
     IF (_id_sensor IS NULL) THEN
         INSERT INTO sensors(mongo_id_sensor, is_number) VALUES (in_mongo_id_sensor, in_is_number);
         SET _id_sensor = last_insert_id();
+    ELSEIF ((_is_number IS NULL) AND (in_is_number IS NOT NULL)) then
+        update sensors SET sensors.is_number = in_is_number;
     END IF;
     RETURN _id_sensor;
 END;

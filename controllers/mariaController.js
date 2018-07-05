@@ -25,10 +25,9 @@ function insertLabel(labelId, sensors, cb) {
     sensors,
     (sensor, done) => {
       client.query(
-        'INSERT INTO label_sensor(id_sensor, mongo_id_label) VALUES ((SELECT id_sensor FROM sensors WHERE (sensors.mongo_id_sensor = ?)), ?)',
+        'INSERT INTO label_sensor(id_sensor, mongo_id_label) VALUES ((SELECT exist_sensor(?, NULL)), ?)',
         [sensor, labelId],
-        // Ignore errors due to sensors without series data, as we can't do statistics against them anyway
-        (err, result) => done(null, result));
+        done);
     },
     cb);
 }
@@ -45,32 +44,25 @@ function insertThing(thingId, sensors, cb) {
     sensors,
     (sensor, done) => {
       client.query(
-        'INSERT INTO thing_sensor(id_sensor, mongo_id_thing) VALUES ((SELECT id_sensor FROM sensors WHERE (sensors.mongo_id_sensor = ?)), ?)',
+        'INSERT INTO thing_sensor(id_sensor, mongo_id_thing) VALUES ((SELECT exist_sensor(?, NULL)), ?)',
         [sensor, thingId],
-        // Ignore errors due to sensors without series data, as we can't do statistics against them anyway
-        (err, result) => done(null, result));
+        done);
     },
     cb);
 }
 
-function removeSensorFromLabels(sensorId) {
+function removeSensorFromLabels(sensorId, cb) {
   client.query(
     'DELETE FROM label_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = ?)',
     [sensorId],
-    (err, res) => {
-      /*jshint camelcase: false */
-      console.log('[removeSensorFromLabels result]', res);
-    });
+    cb);
 }
 
-function removeSensorFromThings(sensorId) {
+function removeSensorFromThings(sensorId, cb) {
   client.query(
     'DELETE FROM thing_sensor WHERE id_sensor = (SELECT id_sensor FROM sensors WHERE mongo_id_sensor = ?)',
     [sensorId],
-    (err, res) => {
-      /*jshint camelcase: false */
-      console.log('[removeSensorFromThings result]', res);
-    });
+    cb);
 }
 
 function getStoredThings(cb) {
