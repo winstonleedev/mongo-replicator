@@ -3,6 +3,8 @@
 const nrpClient = require('./db/node-redis-pubsub');
 const devicesController = require('./controllers/devicesController');
 
+devicesController.syncSensors();
+
 nrpClient.on('main:all', (data) => {
   console.log('[redis-pubsub] data - ', data);
   if (data.operation === 'D' && data.eventId === 'gateway') {

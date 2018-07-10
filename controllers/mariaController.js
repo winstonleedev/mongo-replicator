@@ -95,6 +95,30 @@ function getStoredLabels(cb) {
     });
 }
 
+function getSensors(mongoSensorId, cb) {
+  client.query(
+    'SELECT * FROM sensors WHERE mongo_id_sensor = ?',
+    [mongoSensorId],
+    cb
+  );
+}
+
+function updateSensorType(sensorId, type, cb) {
+  client.query(
+    'UPDATE sensors SET type = ? WHERE id_sensor = ?',
+    [type, sensorId],
+    cb
+  );
+}
+
+function createSensor(mongoSensorId, isNumber, type, cb) {
+  client.query(
+    'INSERT INTO sensors(mongo_id_sensor, is_number, type) VALUES (?, ?, ?)',
+    [mongoSensorId, isNumber, type],
+    cb
+  );
+}
+
 module.exports.insertSeries = insertSeries;
 module.exports.deleteLabel = deleteLabel;
 module.exports.insertLabel = insertLabel;
@@ -104,3 +128,6 @@ module.exports.removeSensorFromLabels = removeSensorFromLabels;
 module.exports.removeSensorFromThings = removeSensorFromThings;
 module.exports.getStoredLabels = getStoredLabels;
 module.exports.getStoredThings = getStoredThings;
+module.exports.getSensors = getSensors;
+module.exports.updateSensorType = updateSensorType;
+module.exports.createSensor = createSensor;
